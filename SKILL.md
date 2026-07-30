@@ -67,18 +67,52 @@ python scripts/qingli_downloader.py 10.1016/j.artmed.2025.103345
 - 剩余 < 3 天时打印红色警告
 - 过期后需重新运行 `qingli_login.js` 扫码
 
-### 批量下载
+### 批量下载（推荐）
 
-当用户需要下载多篇论文时，按以下方式循环调用：
+使用 `scripts/batch_download.py` 批量下载，支持断点续传和失败重试：
 
 ```bash
-# 从文件读取 DOI 列表批量下载
-while read doi; do
-  python scripts/qingli_downloader.py "$doi"
-done < dois.txt
+python scripts/batch_download.py <paper_list.json> [--output-dir <dir>]
 ```
 
-或告知用户可以在 Python 中循环调用 `submit_doi()` 和 `get_demands()` 函数。
+**核心特性：**
+- ✅ 断点续传：自动跳过已下载的 PDF（检查文件大小 > 1KB）
+- ✅ 失败记录：写入 `<output_dir>/download_failures.json`，增量保存不丢数据
+- ✅ 重试友好：失败后再次运行相同命令，只下缺失的
+- ✅ 进度显示：实时 ETA 预估
+
+**JSON 输入格式（二选一）：**
+```json
+// 格式1：简单列表
+[{"doi": "10.xxx/yyy", "title": "...", "journal": "..."}]
+
+// 格式2：带分类（自动合并 tier1 + tier2）
+{"tier1_papers": [...], "tier2_papers": [...]}
+```
+
+**可选参数：**
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `--output-dir` / `-o` | `qingli_pdfs` | PDF 输出目录 |
+| `--auth-file` | `qingli_auth.json` | 认证文件路径 |
+| `--interval` | `2` | 篇间间隔秒数 |
+| `--max-wait` | `150` | 单篇轮询最长秒数 |
+
+**重试失败项：**
+失败记录保存在 `<output_dir>/download_failures.json`，再次运行相同命令即可自动重试。
+
+### arXiv 预印本下载
+
+arXiv 论文无 DOI（青梨不支持），用 `scripts/download_arxiv.py` 直接下载：
+
+```bash
+python scripts/download_arxiv.py <arxiv_id> [<arxiv_id> ...] --output-dir <dir>
+```
+
+示例：
+```bash
+python scripts/download_arxiv.py 2607.25324 2605.14108 -o qingli_pdfs/
+```
 
 ## 技术原理
 
