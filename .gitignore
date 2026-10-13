@@ -1,0 +1,16 @@
+﻿# 登录态与私有产物：绝对不要提交
+qingli_auth*.json
+**/qingli_auth*.json
+*cookies*.json
+*storage-state*.json
+qingli_pdfs/
+out/
+*.pdf
+# 依赖与缓存
+node_modules/
+__pycache__/
+*.py[cod]
+
+# 运行时状态（不是源码）
+*ledger*.json
+qingli-quota*.json

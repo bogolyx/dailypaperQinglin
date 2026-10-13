@@ -200,8 +200,10 @@ def main():
     # Step 2: Poll for completion
     print("[2/4] 轮询处理状态...")
     target_demand = None
-    max_wait = 60
-    interval = 5
+    # 2026-10-13 实测：服务端生成 PDF 需要约 3–6 分钟（create_time→complete_time 相差 335 秒）。
+    # 原来只等 60 秒，会误报“处理完成但未返回 PDF 链接”，看着像没有馆藏。
+    max_wait = 900
+    interval = 15
 
     for i in range(0, max_wait, interval):
         time.sleep(interval)
